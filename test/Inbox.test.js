@@ -3,21 +3,23 @@ const ganache = require('ganache-cli')
 const Web3 = require('web3')
 const web3 = new Web3(ganache.provider());
 const mocha = require('mocha')
+const {interface, bytecode} = require('../compile.js')
 
-let one = 1;
 
-beforeEach(() => {
-    console.log('Before the world begins')
+let accounts;
+let inbox;
+
+beforeEach(async () => {
+    accounts = await web3.eth.getAccounts()
+
+    // console.log(accounts)
+    // console.log(interface, bytecode)
+
+    inbox = await new web3.eth.Contract(JSON.parse(interface)).deploy({data: bytecode, arguments: ['777']}).send({from: accounts[0], gas: '1000000'})
 })
 
-describe('MyTest', () => {
-    it('My it test', () => {
-        assert.equal(one, 1);
-    })
-    it('My 2ne test', () => {
-        assert.equal(one, 1);
-    })
-    it('My 3ne test', () => {
-        assert.equal(one, 1);
+describe('Index', () => {
+    it('test', () => {
+    console.log(inbox)
     })
 })
