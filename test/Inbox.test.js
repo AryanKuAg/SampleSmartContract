@@ -1,25 +1,37 @@
-const assert = require('assert');
-const ganache = require('ganache-cli')
-const Web3 = require('web3')
-const web3 = new Web3(ganache.provider());
-const mocha = require('mocha')
-const {interface, bytecode} = require('../compile.js')
+const ganache = require('ganache-cli');
+const Web3 = require('web3');
+const assert = require('assert')
+const provider = ganache.provider();
+const web3 = new Web3(provider);
 
+
+const { interface, bytecode } = require('../compile');
 
 let accounts;
 let inbox;
 
 beforeEach(async () => {
-    accounts = await web3.eth.getAccounts()
+  // Get a list of all accounts
+  accounts = await web3.eth.getAccounts();
+  // Use one of those accounts to deploy the contract
+  inbox = await new web3.eth.Contract(JSON.parse(interface))
+    .deploy({ data: bytecode, arguments: ['324234'] })
+    .send({ from: accounts[0], gas: '1000000' });
+    
+  // ADD THIS ONE LINE RIGHT HERE!!!!! <---------------------
+  // inbox.setProvider(provider);
+});
 
-    // console.log(accounts)
-    // console.log(interface, bytecode)
+describe('Inbox', () => {
+  it('deploys a contract', () => {
+    assert.ok(inbox.options.address);
+  });
 
-    inbox = await new web3.eth.Contract(JSON.parse(interface)).deploy({data: bytecode, arguments: ['777']}).send({from: accounts[0], gas: '1000000'})
-})
-
-describe('Index', () => {
-    it('test', () => {
-    console.log(inbox)
-    })
-})
+  it('idk',async () => {
+    await inbox.methods.setData("5").send({from:accounts[0]})
+    const message = await inbox.methods.data().call()
+    assert.equal(message, "5")
+    
+  })
+  
+});
